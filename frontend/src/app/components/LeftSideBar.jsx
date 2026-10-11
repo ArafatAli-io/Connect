@@ -18,7 +18,7 @@ const LeftSideBar = () => {
   ]
 
   return (
-    <div className='px-4 border w-[20%] h-[95vh] m-4 rounded-xl'>
+    <div className='px-4 border w-[20%] h-[95vh] m-4 rounded-xl fixed'>
       <div className=' flex flex-col items-center '>
         <h1>
           <Image className='w-60 h-35 mx-auto' src="/logo.png" alt="Logo" width={100} height={100} />

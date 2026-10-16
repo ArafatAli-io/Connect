@@ -4,9 +4,6 @@ import * as React from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { cn } from "cn"
 
-import { Button } from "@/components/ui/button"
-// import { XIcon } from "lucide-react"
-
 function Dialog({
   ...props
 }) {
@@ -36,21 +33,26 @@ function DialogOverlay({
   ...props
 }) {
   return (
-    <DialogPrimitive.Backdrop
-      data-slot="dialog-overlay"
-      className={cn(
-        "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
-        className
-      )}
-      {...props}
-    />
+   
+    <DialogPrimitive.Close 
+      nativeButton={false} 
+      render={<div className="fixed inset-0 z-50 isolate" />}
+    >
+      <DialogPrimitive.Backdrop
+        data-slot="dialog-overlay"
+        className={cn(
+          "fixed inset-0 z-[-1] bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+          className
+        )}
+        {...props}
+      />
+    </DialogPrimitive.Close>
   )
 }
 
 function DialogContent({
   className,
   children,
-  showCloseButton = true,
   ...props
 }) {
   return (
@@ -65,21 +67,6 @@ function DialogContent({
         {...props}
       >
         {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            render={
-              <Button
-                variant="ghost"
-                className="absolute top-2 right-2"
-                size="icon-sm"
-              />
-            }
-          >
-            {/* <XIcon
-            />
-            <span className="sr-only">Close</span> */}
-          </DialogPrimitive.Close>
-        )}
       </DialogPrimitive.Popup>
     </DialogPortal>
   )
@@ -115,7 +102,7 @@ function DialogFooter({
     >
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close render={<Button variant="outline" />}>
+        <DialogPrimitive.Close render={<button className="cursor-pointer border px-4 py-2 rounded-md hover:bg-muted transition-colors" />}>
           Close
         </DialogPrimitive.Close>
       )}

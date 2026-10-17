@@ -9,13 +9,24 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const CommentDialog = ({ open, setOpen }) => {
+
   const [text, setText] = useState("");
+
+  const changeEventHandeler = (e) => {
+    const inputText = e.target.value;
+    if (inputText.trim()) {
+      setText(inputText);
+    } else {
+      setText("");
+    }
+  }
+
+  const sendMessageHandeler = async () => {
+    alert(text);
+  }
 
   const handleDialogChange = (value) => {
     setOpen(value);
-    if (!value) {
-      setText("");
-    }
   };
 
   return (
@@ -46,17 +57,17 @@ const CommentDialog = ({ open, setOpen }) => {
                   </Link>
                 </div>
               </div>
-      
+
               <Dialog>
                 <DialogTrigger>
-                  <button  
+                  <button
                     className="focus:outline-none p-1 cursor-pointer block rounded-full hover:bg-muted transition-colors"
                     aria-label="More options"
                   >
                     <MoreHorizontal />
                   </button>
                 </DialogTrigger>
-                
+
                 <DialogContent className="flex flex-col items-center text-lg text-center p-2 gap-1">
                   <button className="cursor-pointer w-full text-red-500 font-bold p-2 hover:bg-muted rounded-md transition-colors">
                     Unfollow
@@ -67,14 +78,14 @@ const CommentDialog = ({ open, setOpen }) => {
                 </DialogContent>
               </Dialog>
             </div>
-            <hr/>
+            <hr />
             <div className="flex-1 overflow-y-auto max-h-96 p-3">
               comment by the other users
             </div>
             <div className="p-3">
               <div className="flex items-center gap-2">
-                <Input type="text" placeholder="Add a comment..."/>
-                <Button variant="outline">Send</Button>
+                <Input type="text" value={text} onChange={changeEventHandeler} placeholder="Add a comment..." />
+                <Button disabled={!text.trim()} onClick={sendMessageHandeler} variant="outline">Send</Button>
               </div>
             </div>
           </div>

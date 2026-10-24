@@ -2,14 +2,16 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { setAuthUser } from '@/lib/redux/authSlice';
 import axios from 'axios';
-import { Loader2, LogIn } from 'lucide-react';
+import { Loader2, LogIn,  } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 
-const Signup = () => {
+const login = () => {
 
   const [input, setinput] = useState({
     email: "",
@@ -23,6 +25,7 @@ const Signup = () => {
   }
 
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const loginHandler = async (e) => {
     e.preventDefault();
@@ -36,6 +39,7 @@ const Signup = () => {
         withCredentials: true
       });
       if (res.data.success) {
+        dispatch(setAuthUser(res.data.user));
         toast.success(res.data.message);
         router.replace("/")
         setinput({
@@ -96,4 +100,4 @@ const Signup = () => {
   )
 }
 
-export default Signup
+export default login

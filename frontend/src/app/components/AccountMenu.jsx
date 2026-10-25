@@ -4,11 +4,13 @@ import axios from 'axios'
 import { LogOut, UsersRound } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React from 'react'
+import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 
 const AccountMenu = () => {
     const router = useRouter();
+    const { user } = useSelector((state) => state.auth);
 
     const menu = [
         { icon: <LogOut />, text: "Logout" },
@@ -38,7 +40,7 @@ const AccountMenu = () => {
 
             <div className='flex justify-start items-center gap-2 pb-2'>
                 <Avatar>
-                    <AvatarImage src="https://github.com/shadcn.png" alt="logo" />
+                    <AvatarImage src={user?.profilePicture} alt="ProfilePicture" />
                     <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div className='flex flex-col'>

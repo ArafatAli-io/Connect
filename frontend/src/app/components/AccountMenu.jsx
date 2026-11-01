@@ -22,7 +22,7 @@ const AccountMenu = () => {
         try {
             const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/user/logout`, { withCredentials: true });
             if (res.data.success) {
-                dispatchEvent(setAuthUser(nul));
+                dispatchEvent(setAuthUser(null));
                 toast.success(res.data.message);
                 router.replace("/login")
             }

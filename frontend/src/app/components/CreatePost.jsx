@@ -3,19 +3,75 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import React, { useRef } from 'react'
+import { readFileAsDataURL } from '@/lib/utils';
+import axios from 'axios';
+import { Loader2 } from 'lucide-react';
+import React, { useRef, useState } from 'react'
+import { toast } from 'sonner';
 
 const CreatePost = ({ open, setOpen }) => {
-const imageRef = useRef();
+  const imageRef = useRef();
+  const [file, setFile] = useState("");
+  const [caption, setCaption] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
+  const [loading, setLoading] = useState(false)
 
+  const fileChangeHandeler = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFile(file);
+      const dataUrl = await readFileAsDataURL(file);
+      setImagePreview(dataUrl);
+    }
+  }
+
+ 
 const createPostHandler = async (e) => {
   e.preventDefault();
-  try {
-    
-  } catch (error) {
-    
+
+  if (!caption.trim() && !file) {
+    toast.error("Please add a caption or select an image");
+    return;
   }
-}
+
+  const formData = new FormData();
+  formData.append("caption", caption);
+
+  if (file) {
+    formData.append("image", file);
+  }
+
+  try {
+    setLoading(true);
+
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/post/addpost`,
+      formData,
+      {
+        withCredentials: true,
+      }
+    );
+
+    if (res.data.success) {
+      toast.success(res.data.message);
+      setCaption("");
+      setFile(null);
+      setImagePreview("");
+    } else {
+      toast.error(res.data.message || "Post creation failed");
+    }
+
+  } catch (error) {
+    console.error("Post creation error:", error.response?.data || error);
+
+    toast.error(
+      error.response?.data?.message || "Something went wrong"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleDialogChange = (value) => {
     setOpen(value);
@@ -32,12 +88,32 @@ const createPostHandler = async (e) => {
           </Avatar>
           <div>
             <h1 className='font-semibold text-xs'>Username</h1>
-            <spam className="text-gray-600 text-xs">Bio here...</spam>
+            <span className="text-gray-600 text-xs">Bio here...</span>
           </div>
         </div>
-        <Textarea placeholder='Write a caption...'/>
-        <Input ref={imageRef} type='file' className='hidden'/>
+        <Textarea  onChange={(e) => setCaption(e.target.value)} placeholder='Write a caption...' />
+        {
+          imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Image Preview"
+              className="w-full h-auto object-cover rounded-lg"
+            />
+          )}
+        <Input onChange={fileChangeHandeler} ref={imageRef} type='file' className='hidden' />
         <Button onClick={() => imageRef.current.click()} className='w-fit mx-auto bg-blue-600 hover:bg-blue-800'>Add your Post</Button>
+        {
+          imagePreview && (
+            loading ? (
+              <Button>
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                Posting...
+              </Button>
+            ) : (
+              <Button onClick={createPostHandler} type="submit" className="w-full">Post</Button>
+            )
+          )
+        }
       </DialogContent>
     </Dialog>
   )

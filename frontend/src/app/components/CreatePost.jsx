@@ -25,52 +25,53 @@ const CreatePost = ({ open, setOpen }) => {
     }
   }
 
- 
-const createPostHandler = async (e) => {
-  e.preventDefault();
 
-  if (!caption.trim() && !file) {
-    toast.error("Please add a caption or select an image");
-    return;
-  }
+  const createPostHandler = async (e) => {
+    e.preventDefault();
 
-  const formData = new FormData();
-  formData.append("caption", caption);
-
-  if (file) {
-    formData.append("image", file);
-  }
-
-  try {
-    setLoading(true);
-
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/post/addpost`,
-      formData,
-      {
-        withCredentials: true,
-      }
-    );
-
-    if (res.data.success) {
-      toast.success(res.data.message);
-      setCaption("");
-      setFile(null);
-      setImagePreview("");
-    } else {
-      toast.error(res.data.message || "Post creation failed");
+    if (!caption.trim() && !file) {
+      toast.error("Please add a caption or select an image");
+      return;
     }
 
-  } catch (error) {
-    console.error("Post creation error:", error.response?.data || error);
+    const formData = new FormData();
+    formData.append("caption", caption);
 
-    toast.error(
-      error.response?.data?.message || "Something went wrong"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+    if (file) {
+      formData.append("image", file);
+    }
+    console.log(formData)
+
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/post/addpost`,
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+        setCaption("");
+        setFile(null);
+        setImagePreview("");
+      } else {
+        toast.error(res.data.message || "Post creation failed");
+      }
+
+    } catch (error) {
+      console.error("Post creation error:", error.response?.data || error);
+
+      toast.error(
+        error.response?.data?.message || "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const handleDialogChange = (value) => {
@@ -91,7 +92,7 @@ const createPostHandler = async (e) => {
             <span className="text-gray-600 text-xs">Bio here...</span>
           </div>
         </div>
-        <Textarea  onChange={(e) => setCaption(e.target.value)} placeholder='Write a caption...' />
+        <Textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder='Write a caption...' />
         {
           imagePreview && (
             <img
@@ -101,16 +102,18 @@ const createPostHandler = async (e) => {
             />
           )}
         <Input onChange={fileChangeHandeler} ref={imageRef} type='file' className='hidden' />
-        <Button onClick={() => imageRef.current.click()} className='w-fit mx-auto bg-blue-600 hover:bg-blue-800'>Add your Post</Button>
+        <Button onClick={() => imageRef.current.click()} className='w-fit mx-auto bg-blue-600 hover:bg-blue-800'>Create Post</Button>
         {
           imagePreview && (
             loading ? (
               <Button>
-                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Posting...
               </Button>
             ) : (
-              <Button onClick={createPostHandler} type="submit" className="w-full">Post</Button>
+              <Button onClick={createPostHandler} type="submit" className="w-full">
+                Add New Post
+              </Button>
             )
           )
         }

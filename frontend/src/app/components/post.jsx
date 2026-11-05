@@ -9,7 +9,7 @@ import { FaPaperPlane, FaRegBookmark, FaRegComment, FaRegHeart } from 'react-ico
 import CommentDialog from './CommentDialog'
 import { useState } from 'react'
 
-const Post = () => {
+const Post = ({post}) => {
 
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
@@ -28,10 +28,10 @@ const Post = () => {
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-2'>
           <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" alt="logo" />
+            <AvatarImage src={post.author?.profilePicture} alt="Profile" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <h1>username</h1>
+          <h1>{post.author?.username}</h1>
         </div>
         <Dialog>
           <DialogTrigger>
@@ -46,8 +46,8 @@ const Post = () => {
       </div>
       <div className="w-full min-h-[55vh] overflow-hidden rounded-xl mt-4">
         <Image
-          src="/cat.jpg"
-          alt="Picture of a cat"
+          src={post.image}
+          alt="post"
           width={1200}
           height={800}
           className="w-full h-[55vh] object-cover rounded-2xl"
@@ -61,10 +61,10 @@ const Post = () => {
         </div>
         <FaRegBookmark size={"20px"} className='cursor-pointer hover:text-gray-600' />
       </div>
-      <span className='font-semibold block mr-2'>1k Likes</span>
+      <span className='font-semibold block mr-2'>{post.likes.length} Likes</span>
       <p>
         <span className='font-semibold block mr-2'>username</span>
-        caption
+        {post.caption}
       </p>
       <span onClick={() => setOpen(true)} className='cursor-pointer text-sm text-gray-400'>view all 10 comments</span>
       <CommentDialog open={open} setOpen={setOpen} />

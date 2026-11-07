@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { setPosts } from '@/lib/redux/postSlice';
 import { readFileAsDataURL } from '@/lib/utils';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import React, { useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 
 const CreatePost = ({ open, setOpen }) => {
@@ -14,7 +16,10 @@ const CreatePost = ({ open, setOpen }) => {
   const [file, setFile] = useState("");
   const [caption, setCaption] = useState("");
   const [imagePreview, setImagePreview] = useState("");
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const { user } = useSelector(store => store.auth);
+  const { posts } = useSelector((store) => store.post); 
+  const dispatch = useDispatch();
 
   const fileChangeHandeler = async (e) => {
     const file = e.target.files?.[0];
@@ -54,10 +59,12 @@ const CreatePost = ({ open, setOpen }) => {
       );
 
       if (res.data.success) {
+        dispatch(setPosts([res.data.post, ...posts]));
         toast.success(res.data.message);
         setCaption("");
         setFile(null);
         setImagePreview("");
+        setOpen(false);
       } else {
         toast.error(res.data.message || "Post creation failed");
       }
@@ -84,11 +91,11 @@ const CreatePost = ({ open, setOpen }) => {
         <DialogHeader className="text-center font-semibold">Create New Post</DialogHeader>
         <div className='flex gap-3 items-center'>
           <Avatar>
-            <AvatarImage src="https://github.com" alt="logo" />
+            <AvatarImage src={user?.profilePicture} alt="profile" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className='font-semibold text-xs'>Username</h1>
+            <h1 className='font-semibold text-xs'>{user?.username}</h1>
             <span className="text-gray-600 text-xs">Bio here...</span>
           </div>
         </div>

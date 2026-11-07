@@ -8,11 +8,13 @@ import Image from 'next/image'
 import { FaPaperPlane, FaRegBookmark, FaRegComment, FaRegHeart } from 'react-icons/fa'
 import CommentDialog from './CommentDialog'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
 
-const Post = ({post}) => {
+const Post = ({ post }) => {
 
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
+  const { user } = useSelector(store => store.auth);
 
   const changeEventHandeler = (e) => {
     const inputText = e.target.value;
@@ -38,9 +40,11 @@ const Post = ({post}) => {
             <MoreHorizontal className='cursor-pointer' />
           </DialogTrigger>
           <DialogContent className="flex flex-col items-center text-sm text-center">
-            <Button variant='ghost' className="cursor-pointer w-fit font-bold font-serif">unfollow</Button>
+            <Button variant='ghost' className="cursor-pointer text-red-500 w-fit font-bold font-serif">unfollow</Button>
             <Button variant='ghost' className="cursor-pointer w-fit font-semibold font-serif">Add to favorites</Button>
-            <Button variant='ghost' className="cursor-pointer w-fit font-semibold font-serif">Delete</Button>
+            {
+              user && user?._id === post?.author._id &&
+              <Button variant='ghost' className="cursor-pointer w-fit font-semibold font-serif">Delete</Button>}
           </DialogContent>
         </Dialog>
       </div>

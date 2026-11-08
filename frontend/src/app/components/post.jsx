@@ -8,13 +8,20 @@ import Image from 'next/image'
 import { FaPaperPlane, FaRegBookmark, FaRegComment, FaRegHeart } from 'react-icons/fa'
 import CommentDialog from './CommentDialog'
 import { useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { GiConsoleController } from 'react-icons/gi'
+import { toast } from 'sonner'
+import axios from 'axios'
+import Posts from './Posts'
+import { setPosts } from '@/lib/redux/postSlice'
 
 const Post = ({ post }) => {
 
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   const { user } = useSelector(store => store.auth);
+  const { posts } = useSelector(store => store.post);
+  const dispatch = useDispatch();
 
   const changeEventHandeler = (e) => {
     const inputText = e.target.value;
@@ -24,6 +31,29 @@ const Post = ({ post }) => {
       setText("");
     }
   }
+
+  const deletePostHandeler = async () => {
+  try {
+    const res = await axios.delete(
+      `${process.env.NEXT_PUBLIC_API_URL}/post/delete/${post?._id}`,
+      { withCredentials: true }
+    );
+
+    if (res.data.success) {
+      const updatedPostData = posts.filter(
+        (postItem) => postItem?._id !== post?._id
+      );
+
+      dispatch(setPosts(updatedPostData));
+      toast.success(res.data.message);
+    }
+  } catch (error) {
+    console.log(error);
+    toast.error(
+      error.response?.data?.message || "Something went wrong"
+    );
+  }
+};
 
   return (
     <div className='my-8 w-full max-w-sm mx-auto'>
@@ -44,7 +74,7 @@ const Post = ({ post }) => {
             <Button variant='ghost' className="cursor-pointer w-fit font-semibold font-serif">Add to favorites</Button>
             {
               user && user?._id === post?.author._id &&
-              <Button variant='ghost' className="cursor-pointer w-fit font-semibold font-serif">Delete</Button>}
+              <Button onClick={deletePostHandeler} variant='ghost' className="cursor-pointer w-fit font-semibold font-serif">Delete</Button>}
           </DialogContent>
         </Dialog>
       </div>

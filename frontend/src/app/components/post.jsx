@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { MoreHorizontal } from 'lucide-react'
 import Image from 'next/image'
-import { FaPaperPlane, FaRegBookmark, FaRegComment, FaRegHeart } from 'react-icons/fa'
+import { FaHeart, FaPaperPlane, FaRegBookmark, FaRegComment, FaRegHeart } from 'react-icons/fa'
 import CommentDialog from './CommentDialog'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { GiConsoleController } from 'react-icons/gi'
 import { toast } from 'sonner'
 import axios from 'axios'
 import Posts from './Posts'
 import { setPosts } from '@/lib/redux/postSlice'
+
 
 const Post = ({ post }) => {
 
@@ -21,6 +21,9 @@ const Post = ({ post }) => {
   const [open, setOpen] = useState(false);
   const { user } = useSelector(store => store.auth);
   const { posts } = useSelector(store => store.post);
+  const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
+  const [postLike, setPostLike] = useState(post.likes.length);
+  const [comment, setComment] = useState(post.comments);
   const dispatch = useDispatch();
 
   const changeEventHandeler = (e) => {
@@ -32,28 +35,79 @@ const Post = ({ post }) => {
     }
   }
 
-  const deletePostHandeler = async () => {
-  try {
-    const res = await axios.delete(
-      `${process.env.NEXT_PUBLIC_API_URL}/post/delete/${post?._id}`,
-      { withCredentials: true }
-    );
-
-    if (res.data.success) {
-      const updatedPostData = posts.filter(
-        (postItem) => postItem?._id !== post?._id
+  const likeOrDislikeHandler = async () => {
+    try {
+      const action = liked ? 'dislike' : 'like';
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/post/${post._id}/${action}`,
+        { withCredentials: true }
       );
 
-      dispatch(setPosts(updatedPostData));
-      toast.success(res.data.message);
+      if (res.data.success) {
+        const updatedLikes = liked ? postLike - 1 : postLike + 1;
+        setPostLike(updatedLikes);
+        setLiked(!liked);
+
+        const updatedPostData = posts.map(p =>
+          p._id == post._id ? {
+            ...p,
+            likes: liked ? p.likes.filter((id) => id !== user._id) : [...p.likes, user._id]
+          } : p
+        );
+        dispatch(setPosts(updatedPostData));
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.error(error);
     }
-  } catch (error) {
-    console.log(error);
-    toast.error(
-      error.response?.data?.message || "Something went wrong"
-    );
+  };
+
+  const commentHandler = async () => {
+    try {
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/post/${post._id}/comment`, { text }, {
+        headers: {
+          'content-Type': 'application/json'
+        }, withCredentials: true
+      });
+      if ((await res).data.success) {
+        const updatedCommentData = [...comment, res.data.message];
+        setComment(updatedCommentData);
+
+        const updatedPostData = posts.map( p =>
+          p._id == post._id? {...p, comments:updatedCommentData} : p
+        );
+
+        dispatch(setPosts(updatedPostData));
+      toast.success(res.data.message);
+      setText("");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
-};
+
+  const deletePostHandeler = async () => {
+    try {
+      const res = await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/post/delete/${post?._id}`,
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        const updatedPostData = posts.filter(
+          (postItem) => postItem?._id !== post?._id
+        );
+
+        dispatch(setPosts(updatedPostData));
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(
+        error.response?.data?.message || "Something went wrong"
+      );
+    }
+  };
 
   return (
     <div className='my-8 w-full max-w-sm mx-auto'>
@@ -78,29 +132,31 @@ const Post = ({ post }) => {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="w-full min-h-[55vh] overflow-hidden rounded-xl mt-4">
+      <div className="w-full min-h-[75vh] min-w-[27vw] overflow-hidden rounded-xl mt-4">
         <Image
           src={post.image}
           alt="post"
           width={1200}
           height={800}
-          className="w-full h-[55vh] object-cover rounded-2xl"
+          className="w-full h-[75vh] object-cover rounded-2xl"
         />
       </div>
       <div className='flex items-center justify-between my-2'>
         <div className=' flex items-center gap-3'>
-          <FaRegHeart size={"20px"} className='cursor-pointer hover:text-gray-600' />
+          {
+            liked ? <FaHeart onClick={likeOrDislikeHandler} size={"20px"} color='red' className='cursor-pointer' /> : <FaRegHeart onClick={likeOrDislikeHandler} size={"20px"} className='cursor-pointer hover:text-gray-600' />
+          }
           <FaRegComment onClick={() => setOpen(true)} size={"20px"} className='cursor-pointer hover:text-gray-600' />
           <FaPaperPlane size={"20px"} className='cursor-pointer hover:text-gray-600' />
         </div>
         <FaRegBookmark size={"20px"} className='cursor-pointer hover:text-gray-600' />
       </div>
-      <span className='font-semibold block mr-2'>{post.likes.length} Likes</span>
+      <span className='font-semibold block mr-2'>{postLike} Likes</span>
       <p>
-        <span className='font-semibold block mr-2'>username</span>
+        <span className='font-semibold block mr-2'>{post.author?.username}</span>
         {post.caption}
       </p>
-      <span onClick={() => setOpen(true)} className='cursor-pointer text-sm text-gray-400'>view all 10 comments</span>
+      <span onClick={() => setOpen(true)} className='cursor-pointer text-sm text-gray-400'>View all {comment.length} comments</span>
       <CommentDialog open={open} setOpen={setOpen} />
       <div className='flex items-center justify-between'>
         <input
@@ -111,7 +167,7 @@ const Post = ({ post }) => {
           className='outline-none text-sm w-full'
         />
         {
-          text && <span className='text-[#38ADF8]'>Post</span>
+          text && <span onClick={commentHandler} className='text-[#38ADF8] cursor-pointer'>Post</span>
         }
       </div>
     </div>

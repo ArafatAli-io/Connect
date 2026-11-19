@@ -13,6 +13,8 @@ import { toast } from 'sonner'
 import axios from 'axios'
 import Posts from './Posts'
 import { setPosts } from '@/lib/redux/postSlice'
+import { setSelectedPost } from '@/lib/redux/postSlice'
+import { Badge } from '@/components/ui/badge'
 
 
 const Post = ({ post }) => {
@@ -69,17 +71,17 @@ const Post = ({ post }) => {
           'content-Type': 'application/json'
         }, withCredentials: true
       });
-      if ((await res).data.success) {
-        const updatedCommentData = [...comment, res.data.message];
+      if (res.data.success) {
+        const updatedCommentData = [...comment, res.data.comment];
         setComment(updatedCommentData);
 
-        const updatedPostData = posts.map( p =>
-          p._id == post._id? {...p, comments:updatedCommentData} : p
+        const updatedPostData = posts.map(p =>
+          p._id == post._id ? { ...p, comments: updatedCommentData } : p
         );
 
         dispatch(setPosts(updatedPostData));
-      toast.success(res.data.message);
-      setText("");
+        toast.success(res.data.message);
+        setText("");
       }
     } catch (error) {
       console.log(error);
@@ -117,7 +119,11 @@ const Post = ({ post }) => {
             <AvatarImage src={post.author?.profilePicture} alt="Profile" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
-          <h1>{post.author?.username}</h1>
+          <div className='flex items-center gap-3'>
+             <h1>{post.author?.username}</h1>
+             {user?._id == post.author._id && <Badge variant='secondary'>Author</Badge>}
+          </div>
+          
         </div>
         <Dialog>
           <DialogTrigger>
@@ -146,7 +152,10 @@ const Post = ({ post }) => {
           {
             liked ? <FaHeart onClick={likeOrDislikeHandler} size={"20px"} color='red' className='cursor-pointer' /> : <FaRegHeart onClick={likeOrDislikeHandler} size={"20px"} className='cursor-pointer hover:text-gray-600' />
           }
-          <FaRegComment onClick={() => setOpen(true)} size={"20px"} className='cursor-pointer hover:text-gray-600' />
+          <FaRegComment onClick={() => {
+            dispatch(setSelectedPost(post));
+            setOpen(true);
+          }} size={"20px"} className='cursor-pointer hover:text-gray-600' />
           <FaPaperPlane size={"20px"} className='cursor-pointer hover:text-gray-600' />
         </div>
         <FaRegBookmark size={"20px"} className='cursor-pointer hover:text-gray-600' />
@@ -155,8 +164,14 @@ const Post = ({ post }) => {
       <p>
         <span className='font-semibold block mr-2'>{post.author?.username}</span>
         {post.caption}
-      </p>
-      <span onClick={() => setOpen(true)} className='cursor-pointer text-sm text-gray-400'>View all {comment.length} comments</span>
+      </p>{
+        comment.length > 0 && (
+          <span onClick={() => {
+            dispatch(setSelectedPost(post));
+            setOpen(true);
+          }} className='cursor-pointer text-sm text-gray-400'>View all {comment.length} comments</span>
+        )
+      }
       <CommentDialog open={open} setOpen={setOpen} />
       <div className='flex items-center justify-between'>
         <input

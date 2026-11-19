@@ -1,6 +1,7 @@
 "use client"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { setAuthUser } from '@/lib/redux/authSlice'
+import { setPosts, setSelectedPost } from '@/lib/redux/postSlice'
 import axios from 'axios'
 import { LogOut, UsersRound } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -23,6 +24,8 @@ const AccountMenu = () => {
             const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/user/logout`, { withCredentials: true });
             if (res.data.success) {
                 dispatchEvent(setAuthUser(null));
+                dispatchEvent(setSelectedPost(null));
+                dispatchEvent(setPosts([]));
                 toast.success(res.data.message);
                 router.replace("/login")
             }

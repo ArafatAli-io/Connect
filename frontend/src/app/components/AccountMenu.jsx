@@ -8,31 +8,46 @@ import { useRouter } from 'next/navigation'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
+import { useDispatch } from "react-redux";
 
 
 const AccountMenu = () => {
     const router = useRouter();
     const { user } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
 
     const menu = [
         { icon: <LogOut />, text: "Logout" },
         { icon: <UsersRound />, text: "SwitchUser" }
     ]
 
-    const logoutHandler = async () => {
-        try {
-            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/user/logout`, { withCredentials: true });
-            if (res.data.success) {
-                dispatchEvent(setAuthUser(null));
-                dispatchEvent(setSelectedPost(null));
-                dispatchEvent(setPosts([]));
-                toast.success(res.data.message);
-                router.replace("/login")
-            }
-        } catch (error) {
-            toast.error(error.response.data.message);
+    
+const logoutHandler = async () => {
+    try {
+        const res = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/user/logout`,
+            { withCredentials: true }
+        );
+
+        if (res.data.success) {
+            dispatch(setAuthUser(null));
+            dispatch(setSelectedPost(null));
+            dispatch(setPosts([]));
+
+            toast.success(res.data.message);
+            router.replace("/login");
         }
+    } catch (error) {
+        console.log("Logout error:", error);
+
+        toast.error(
+            error.response?.data?.message ||
+            error.message ||
+            "Something went wrong during logout."
+        );
     }
+};
+
 
     const sidebarHandler = (textType) => {
         if (textType == 'Logout' || textType == "SwitchUser") logoutHandler();
